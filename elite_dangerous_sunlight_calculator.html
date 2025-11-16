@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Dangerous Sunlight Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(20, 25, 45, 0.8);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #ff8c00;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            background: rgba(30, 35, 55, 0.6);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff8c00;
+        }
+        
+        h2 {
+            color: #ff8c00;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        
+        input {
+            background: rgba(10, 15, 30, 0.8);
+            border: 1px solid #444;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #ff8c00;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(30, 35, 55, 0.8);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result-status {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .result-status.daylight {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: #000;
+        }
+        
+        .result-status.night {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            color: #fff;
+            border: 2px solid #444;
+        }
+        
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .detail-item {
+            background: rgba(10, 15, 30, 0.6);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .detail-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .info-box {
+            background: rgba(255, 140, 0, 0.1);
+            border-left: 4px solid #ff8c00;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⭐ Elite Dangerous Sunlight Calculator</h1>
+        <p class="subtitle">Calculate if planetary coordinates are in sunlight at a given time</p>
+        
+        <div class="section">
+            <h2>🌟 Star Data</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Solar Masses</label>
+                    <input type="number" id="starMass" step="0.01" value="1.0" placeholder="e.g., 1.0">
+                </div>
+                <div class="input-group">
+                    <label>Solar Radius</label>
+                    <input type="number" id="starRadius" step="0.01" value="1.0" placeholder="e.g., 1.0">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🌍 Planet Data</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Radius (km)</label>
+                    <input type="number" id="planetRadius" step="1" value="6371" placeholder="e.g., 6371">
+                </div>
+                <div class="input-group">
+                    <label>Orbital Period (days)</label>
+                    <input type="number" id="orbitalPeriod" step="0.001" value="365.25" placeholder="e.g., 365.25">
+                </div>
+                <div class="input-group">
+                    <label>Semi-Major Axis (AU)</label>
+                    <input type="number" id="semiMajorAxis" step="0.001" value="1.0" placeholder="e.g., 1.0">
+                </div>
+                <div class="input-group">
+                    <label>Orbital Eccentricity</label>
+                    <input type="number" id="eccentricity" step="0.001" value="0.0167" placeholder="e.g., 0.0167">
+                </div>
+                <div class="input-group">
+                    <label>Orbital Inclination (degrees)</label>
+                    <input type="number" id="inclination" step="0.01" value="0" placeholder="e.g., 0">
+                </div>
+                <div class="input-group">
+                    <label>Argument of Periapsis (degrees)</label>
+                    <input type="number" id="argPeriapsis" step="0.01" value="102.94" placeholder="e.g., 102.94">
+                </div>
+                <div class="input-group">
+                    <label>Rotational Period (days)</label>
+                    <input type="number" id="rotationPeriod" step="0.001" value="1.0" placeholder="e.g., 1.0">
+                </div>
+                <div class="input-group">
+                    <label>Axial Tilt (degrees)</label>
+                    <input type="number" id="axialTilt" step="0.01" value="23.44" placeholder="e.g., 23.44">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📍 Location & Time</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Latitude (degrees, -90 to 90)</label>
+                    <input type="number" id="latitude" step="0.0001" value="0" placeholder="e.g., 51.5074">
+                </div>
+                <div class="input-group">
+                    <label>Longitude (degrees, -180 to 180)</label>
+                    <input type="number" id="longitude" step="0.0001" value="0" placeholder="e.g., -0.1278">
+                </div>
+                <div class="input-group">
+                    <label>Date & Time (UTC)</label>
+                    <input type="datetime-local" id="datetime" value="">
+                </div>
+                <div class="input-group">
+                    <label>Reference Epoch (UTC)</label>
+                    <input type="datetime-local" id="epoch" value="">
+                </div>
+            </div>
+            <div class="info-box">
+                ℹ️ <strong>Reference Epoch:</strong> The time when the planet was at a known position in its orbit (e.g., periapsis). 
+                If you don't have this, use the current game time or any reference point.
+            </div>
+        </div>
+        
+        <button onclick="calculate()">Calculate Sunlight Status</button>
+        
+        <div id="result" class="result">
+            <div id="resultStatus" class="result-status"></div>
+            <div class="result-details" id="resultDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        // Set default datetime to now
+        document.getElementById('datetime').value = new Date().toISOString().slice(0, 16);
+        document.getElementById('epoch').value = new Date().toISOString().slice(0, 16);
+
+        function calculate() {
+            // Get all input values
+            const starMass = parseFloat(document.getElementById('starMass').value);
+            const starRadius = parseFloat(document.getElementById('starRadius').value);
+            const planetRadius = parseFloat(document.getElementById('planetRadius').value);
+            const orbitalPeriod = parseFloat(document.getElementById('orbitalPeriod').value);
+            const semiMajorAxis = parseFloat(document.getElementById('semiMajorAxis').value);
+            const eccentricity = parseFloat(document.getElementById('eccentricity').value);
+            const inclination = parseFloat(document.getElementById('inclination').value) * Math.PI / 180;
+            const argPeriapsis = parseFloat(document.getElementById('argPeriapsis').value) * Math.PI / 180;
+            const rotationPeriod = parseFloat(document.getElementById('rotationPeriod').value);
+            const axialTilt = parseFloat(document.getElementById('axialTilt').value) * Math.PI / 180;
+            const latitude = parseFloat(document.getElementById('latitude').value) * Math.PI / 180;
+            const longitude = parseFloat(document.getElementById('longitude').value) * Math.PI / 180;
+            
+            const datetime = new Date(document.getElementById('datetime').value);
+            const epoch = new Date(document.getElementById('epoch').value);
+            
+            // Calculate time difference in days
+            const timeDiff = (datetime - epoch) / (1000 * 60 * 60 * 24);
+            
+            // Calculate mean anomaly
+            const meanMotion = 2 * Math.PI / orbitalPeriod;
+            const meanAnomaly = meanMotion * timeDiff;
+            
+            // Solve Kepler's equation for eccentric anomaly (using Newton-Raphson)
+            let E = meanAnomaly;
+            for (let i = 0; i < 10; i++) {
+                E = E - (E - eccentricity * Math.sin(E) - meanAnomaly) / (1 - eccentricity * Math.cos(E));
+            }
+            
+            // Calculate true anomaly
+            const trueAnomaly = 2 * Math.atan2(
+                Math.sqrt(1 + eccentricity) * Math.sin(E / 2),
+                Math.sqrt(1 - eccentricity) * Math.cos(E / 2)
+            );
+            
+            // Calculate distance from star
+            const AU_TO_KM = 149597870.7;
+            const distance = semiMajorAxis * (1 - eccentricity * Math.cos(E)) * AU_TO_KM;
+            
+            // Calculate orbital position (in orbital plane)
+            const r = distance;
+            const x_orbit = r * Math.cos(trueAnomaly);
+            const y_orbit = r * Math.sin(trueAnomaly);
+            
+            // Apply argument of periapsis rotation
+            const x_rotated = x_orbit * Math.cos(argPeriapsis) - y_orbit * Math.sin(argPeriapsis);
+            const y_rotated = x_orbit * Math.sin(argPeriapsis) + y_orbit * Math.cos(argPeriapsis);
+            
+            // Apply inclination
+            const x_inclined = x_rotated;
+            const y_inclined = y_rotated * Math.cos(inclination);
+            const z_inclined = y_rotated * Math.sin(inclination);
+            
+            // Planet position relative to star (star at origin)
+            const planetPos = {
+                x: x_inclined,
+                y: y_inclined,
+                z: z_inclined
+            };
+            
+            // Calculate planet's rotation angle
+            const rotationAngle = (timeDiff % rotationPeriod) / rotationPeriod * 2 * Math.PI;
+            
+            // Calculate surface point position in planet frame
+            // First, point on surface without axial tilt
+            const surfaceX = planetRadius * Math.cos(latitude) * Math.cos(longitude + rotationAngle);
+            const surfaceY = planetRadius * Math.cos(latitude) * Math.sin(longitude + rotationAngle);
+            const surfaceZ = planetRadius * Math.sin(latitude);
+            
+            // Apply axial tilt (rotate around X-axis)
+            const surfaceX_tilted = surfaceX;
+            const surfaceY_tilted = surfaceY * Math.cos(axialTilt) - surfaceZ * Math.sin(axialTilt);
+            const surfaceZ_tilted = surfaceY * Math.sin(axialTilt) + surfaceZ * Math.cos(axialTilt);
+            
+            // Surface point in space frame (add planet position)
+            const surfacePos = {
+                x: planetPos.x + surfaceX_tilted,
+                y: planetPos.y + surfaceY_tilted,
+                z: planetPos.z + surfaceZ_tilted
+            };
+            
+            // Vector from surface point to star (star at origin)
+            const toStar = {
+                x: -surfacePos.x,
+                y: -surfacePos.y,
+                z: -surfacePos.z
+            };
+            
+            // Normalize
+            const toStarMag = Math.sqrt(toStar.x**2 + toStar.y**2 + toStar.z**2);
+            const toStarNorm = {
+                x: toStar.x / toStarMag,
+                y: toStar.y / toStarMag,
+                z: toStar.z / toStarMag
+            };
+            
+            // Vector from planet center to surface point
+            const toSurface = {
+                x: surfaceX_tilted,
+                y: surfaceY_tilted,
+                z: surfaceZ_tilted
+            };
+            
+            // Normalize
+            const toSurfaceMag = Math.sqrt(toSurface.x**2 + toSurface.y**2 + toSurface.z**2);
+            const toSurfaceNorm = {
+                x: toSurface.x / toSurfaceMag,
+                y: toSurface.y / toSurfaceMag,
+                z: toSurface.z / toSurfaceMag
+            };
+            
+            // Dot product: if positive, surface normal points toward star (daylight)
+            const dotProduct = toStarNorm.x * toSurfaceNorm.x + 
+                             toStarNorm.y * toSurfaceNorm.y + 
+                             toStarNorm.z * toSurfaceNorm.z;
+            
+            const isDaylight = dotProduct > 0;
+            
+            // Calculate solar elevation angle
+            const solarElevation = Math.asin(dotProduct) * 180 / Math.PI;
+            
+            // Calculate local solar time (approximate)
+            const localSolarTime = ((longitude + rotationAngle) % (2 * Math.PI)) * 12 / Math.PI;
+            const localSolarTimeHours = ((localSolarTime + 24) % 24).toFixed(2);
+            
+            // Display results
+            const resultDiv = document.getElementById('result');
+            const statusDiv = document.getElementById('resultStatus');
+            const detailsDiv = document.getElementById('resultDetails');
+            
+            resultDiv.classList.add('show');
+            
+            if (isDaylight) {
+                statusDiv.className = 'result-status daylight';
+                statusDiv.innerHTML = '☀️ IN SUNLIGHT';
+            } else {
+                statusDiv.className = 'result-status night';
+                statusDiv.innerHTML = '🌙 IN DARKNESS';
+            }
+            
+            detailsDiv.innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Solar Elevation</div>
+                    <div class="detail-value">${solarElevation.toFixed(2)}°</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Local Solar Time</div>
+                    <div class="detail-value">${localSolarTimeHours} hours</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Distance from Star</div>
+                    <div class="detail-value">${(distance / AU_TO_KM).toFixed(4)} AU</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">True Anomaly</div>
+                    <div class="detail-value">${(trueAnomaly * 180 / Math.PI).toFixed(2)}°</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Orbital Position</div>
+                    <div class="detail-value">${((timeDiff % orbitalPeriod) / orbitalPeriod * 100).toFixed(1)}%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Rotational Position</div>
+                    <div class="detail-value">${((timeDiff % rotationPeriod) / rotationPeriod * 100).toFixed(1)}%</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
